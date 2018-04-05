@@ -1,0 +1,28 @@
+{
+  "players": [
+      {
+        "name": "Paschy90",
+        "team": "Team Vitality"
+      },
+      {
+        "name": "Fairy Peak!",
+        "team": "Team Vitality"
+      },
+      {
+        "name": "Freakii",
+        "team": "Team Vitality"
+      },
+      {
+        "name": "JSTN",
+        "team": "NRG"
+      },
+      {
+        "name": "GarretG",
+        "team": "NRG"
+      },
+      {
+        "name": "Fireburner",
+        "team": "NRG"
+      }
+  ]
+}

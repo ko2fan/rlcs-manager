@@ -44,17 +44,46 @@
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
-#include "gui.h"
-#include "menu.h"
-
-#include "gui.c"
-#include "menu.c"
-
 typedef enum {
     MENU_STATE = 0,
     OFFICE_STATE,
-    GAME_STATE
+    GAME_STATE,
+    EXIT_STATE
 } State;
+
+typedef struct Param
+{
+    char *name;
+    char *value;
+} Param;
+
+typedef struct Object
+{
+    Param **params;
+    int numParams;
+} Object;
+
+struct Gui;
+
+typedef struct Game
+{
+    State state;
+    struct Gui *gui;
+
+    Object **objects;
+    int numObjects;
+} Game;
+
+#include "gui.h"
+#include "menu.h"
+#include "office.h"
+
+#include "gui.c"
+#include "menu.c"
+#include "office.c"
+
+int loadFile(Game *game, const char *filename);
+void getNextToken(char *string, Param *param, jsmntok_t *token);
 
 int main(void)
 {
@@ -82,13 +111,21 @@ int main(void)
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     /* GUI */
+    Game game = {};
     Gui gui;
     initUI(&gui, win);
 
+    Object *objects[1024] = {};
+    game.gui = &gui;
+    game.state = MENU_STATE;
+    game.objects = objects;
+    game.numObjects = 0;
+
     setBackgroundColour(&gui, 0.23f, 0.42f, 0.57f);
 
-    // State of game
-    int state = MENU_STATE;
+    /* Load files */
+    loadFile(&game, "../players");
+
     while (running)
     {
         /* Input */
@@ -102,21 +139,24 @@ int main(void)
         endInput(&gui);
 
         /* GUI */
-        switch (state)
+        switch (game.state)
         {
             case MENU_STATE:
                 {
-                    menuState(&gui, win);
-                    //state = OFFICE_STATE;
+                    menuState(&game, win);
                 } break;
             case OFFICE_STATE:
                 {
-                    state = GAME_STATE;
+                    officeState(&game, win);
                 } break;
             case GAME_STATE:
                 {
-                    state = MENU_STATE;
+                    game.state = MENU_STATE;
                 } break;
+            case EXIT_STATE:
+            {
+                running = false;
+            } break;
             default:
                 break;
         }
@@ -135,4 +175,117 @@ int main(void)
     SDL_DestroyWindow(win);
     SDL_Quit();
     return 0;
+}
+
+// Returns success
+int loadFile(Game *game, const char *filename)
+{
+    FILE *file = fopen(filename, "r");
+    int numTokens = 0;
+    char buffer[1024] = {};
+
+    // read the file
+    fread(buffer, 1024, 1, file);
+
+    // init jsmn
+    jsmn_parser parser;
+    jsmn_init(&parser);
+    numTokens = jsmn_parse(&parser, buffer, strlen(buffer), NULL, 0);
+
+    jsmntok_t *tokens = (jsmntok_t*)malloc(sizeof(jsmntok_t) * numTokens);
+
+    jsmn_init(&parser);
+    jsmn_parse(&parser, buffer, strlen(buffer), tokens, numTokens);
+
+    printf("File: %s contains %d tokens\n", filename, numTokens);
+
+    for (int i = 0; i < numTokens; ++i)
+    {
+        jsmntok_t tok = tokens[i];
+        switch (tok.type)
+        {
+            case JSMN_OBJECT:
+            {
+                printf("Object found\n");
+                Object *obj = (Object*)malloc(sizeof(Object));
+                obj->numParams = tok.size;
+                obj->params = (Param**)malloc(sizeof(Param*) * obj->numParams);
+                game->objects[game->numObjects++] = obj;
+
+                int index = i + 1; // start from token after the object
+
+                for (int j = 0; j < tok.size; ++j)
+                {
+                    Param *param = (Param*)malloc(sizeof(Param));
+                    param->name = 0;
+                    param->value = 0;
+                    getNextToken(buffer, param, &tokens[index]);
+                    printf("Loaded parameter: %s: %s\n", param->name, param->value);
+                    obj->params[j] = param;
+                    index += 2; // processed name, value so skip those tokens now
+                }
+                // move past this object
+                i += tok.size + 1;
+            } break;
+            default:
+                ;
+        }
+    }
+
+    return 0; // NO ERRORS
+
+    // create object -> assign string name -> assign string value
+
+    // TODO:
+    // create divisions
+    // create teams
+    // assign teams to divisions
+    // create players
+    // assign players to teams
+}
+
+void getNextToken(char *string, Param *param, jsmntok_t *token)
+{
+    switch (token->type)
+    {
+        case JSMN_OBJECT:
+            return;
+        case JSMN_ARRAY:
+        {
+            printf("Array found\n");
+            if (token->size > 1)
+            {
+                getNextToken(string, param, token + 1);
+            }
+        }
+            break;
+        case JSMN_STRING:
+        {
+            unsigned int len = token->end - token->start;
+            char *s = (char *) malloc(sizeof(char) * len + 1);
+            strncpy(s, &string[token->start], len);
+            s[len] = '\0';
+
+            if (param->name == 0)
+            {
+                param->name = s;
+                getNextToken(string, param, token + 1);
+            }
+            else if (param->value == 0)
+            {
+                param->value = s;
+            }
+
+            if (token->size > 1)
+            {
+                getNextToken(string, param, token + 1);
+            }
+
+        }
+            break;
+        default:
+        {
+            printf("Expected array or string, found %d\n", token->type);
+        }
+    }
 }

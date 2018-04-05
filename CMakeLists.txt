@@ -11,6 +11,6 @@ link_directories("jsmn")
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(rlcs_manager main.c nuklear.h nuklear_sdl_gl3.h office.c office.h)
+add_executable(rlcs_manager main.c nuklear.h nuklear_sdl_gl3.h)
 
 target_link_libraries(rlcs_manager ${OPENGL_LIBRARIES} ${SDL2_LIBRARIES} "jsmn.a")

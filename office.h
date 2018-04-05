@@ -10,9 +10,9 @@
 //
 //
 
-#ifndef RLCS_MANAGER_MENU_H
-#define RLCS_MANAGER_MENU_H
+#ifndef RLCS_MANAGER_OFFICE_H
+#define RLCS_MANAGER_OFFICE_H
 
-void menuState(Game *game, SDL_Window *win);
+void officeState(Game *game, SDL_Window *win);
 
-#endif //RLCS_MANAGER_MENU_H
+#endif //RLCS_MANAGER_OFFICE_H

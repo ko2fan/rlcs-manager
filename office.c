@@ -10,9 +10,41 @@
 //
 //
 
-#ifndef RLCS_MANAGER_MENU_H
-#define RLCS_MANAGER_MENU_H
+void officeState(Game *game, SDL_Window *win)
+{
+    int win_width;
+    int win_height;
+    int numPlayers = 6;
+    SDL_GetWindowSize(win, &win_width, &win_height);
 
-void menuState(Game *game, SDL_Window *win);
+    float centreX = win_width / 2;
+    float centreY = win_height / 2;
 
-#endif //RLCS_MANAGER_MENU_H
+    Gui *gui = game->gui;
+
+    if (nk_begin(gui->ctx, "Players", nk_rect(centreX - 325 / 2, centreY - 300, 325, 400),
+                 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_TITLE))
+    {
+        nk_layout_row_dynamic(gui->ctx, 35, 2);
+        for (int i = 1; i < game->numObjects; ++i)
+        {
+            Object *obj = game->objects[i];
+            for (int j = 0; j < obj->numParams; ++j)
+            {
+                if (strncmp(obj->params[j]->name, "name", 4) == 0)
+                {
+                    nk_label_wrap(gui->ctx, obj->params[j]->value);
+                }
+                else if (strncmp(obj->params[j]->name, "team", 4) == 0)
+                {
+                    nk_label_wrap(gui->ctx, obj->params[j]->value);
+                }
+            }
+        }
+
+        nk_layout_row_dynamic(gui->ctx, 50, 1);
+        if (nk_button_label(gui->ctx, "Back"))
+            game->state = MENU_STATE;
+    }
+    nk_end(gui->ctx);
+}

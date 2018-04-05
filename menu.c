@@ -10,7 +10,7 @@
 //
 //
 
-void menuState(Gui *gui, SDL_Window *win)
+void menuState(Game *game, SDL_Window *win)
 {
     int win_width;
     int win_height;
@@ -19,19 +19,21 @@ void menuState(Gui *gui, SDL_Window *win)
     float centreX = win_width / 2;
     float centreY = win_height / 2;
 
+    Gui *gui = game->gui;
+
     if (nk_begin(gui->ctx, "RLCS Manager", nk_rect(centreX-250/2, centreY-275, 250, 275),
                  NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE))
     {
 
         nk_layout_row_dynamic(gui->ctx, 50, 1);
         if (nk_button_label(gui->ctx, "Start New Game"))
-            printf("Starting new game!\n");
+            game->state = OFFICE_STATE;
         if (nk_button_label(gui->ctx, "Load Game"))
             printf("Loading previously saved game!\n");
         if (nk_button_label(gui->ctx, "Options"))
             printf("Show game options!\n");
         if (nk_button_label(gui->ctx, "Exit Game"))
-            printf("Exiting\n");
+            game->state = EXIT_STATE;
     }
     nk_end(gui->ctx);
 }
