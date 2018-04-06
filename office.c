@@ -22,7 +22,7 @@ void officeState(Game *game, SDL_Window *win)
 
     Gui *gui = game->gui;
 
-    if (nk_begin(gui->ctx, "Players", nk_rect(centreX - 325 / 2, centreY - 300, 325, 400),
+    if (nk_begin(gui->ctx, "Players", nk_rect(centreX - 500 / 2, centreY - 400, 500, 600),
                  NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_TITLE))
     {
         nk_layout_row_dynamic(gui->ctx, 35, 2);

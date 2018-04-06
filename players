@@ -13,6 +13,30 @@
         "team": "Team Vitality"
       },
       {
+        "name": "Kaydrop",
+        "team": "Gale Force"
+      },
+      {
+        "name": "ViolentPanda",
+        "team": "Gale Force"
+      },
+      {
+        "name": "Turbopolsa",
+        "team": "Gale Force"
+      },
+      {
+        "name": "Mognus",
+        "team": "Complexity"
+      },
+      {
+        "name": "al0t",
+        "team": "Complexity"
+      },
+      {
+        "name": "Metsanauris",
+        "team": "Complexity"
+      },
+      {
         "name": "JSTN",
         "team": "NRG"
       },
@@ -23,6 +47,30 @@
       {
         "name": "Fireburner",
         "team": "NRG"
+      },
+      {
+        "name": "Gimmick",
+        "team": "Cloud9"
+      },
+      {
+        "name": "SquishyMuffinz",
+        "team": "Cloud9"
+      },
+      {
+        "name": "Torment",
+        "team": "Cloud9"
+      },
+      {
+        "name": "Kronovi",
+        "team": "G2"
+      },
+      {
+        "name": "Rizzo",
+        "team": "G2"
+      },
+      {
+        "name": "JKnaps",
+        "team": "G2"
       }
   ]
 }

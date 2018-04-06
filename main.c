@@ -182,10 +182,28 @@ int loadFile(Game *game, const char *filename)
 {
     FILE *file = fopen(filename, "r");
     int numTokens = 0;
-    char buffer[1024] = {};
+    int amountRead = 0;
+    int fileSize = 512;
+    char *buffer = (char*)malloc(sizeof(char) * fileSize);
+    int bytes = 0;
 
     // read the file
-    fread(buffer, 1024, 1, file);
+    do
+    {
+        if (amountRead >= fileSize)
+        {
+            fileSize *= 2;
+            char *oldBuffer = (char*)malloc(sizeof(char) * fileSize);
+            strcpy(oldBuffer, buffer);
+            buffer = realloc(buffer, sizeof(char) * fileSize);
+            strcpy(buffer, oldBuffer);
+            free(oldBuffer);
+        }
+        bytes = fread(buffer+amountRead, 1, fileSize-amountRead, file);
+        amountRead += bytes;
+    } while (amountRead == fileSize);
+
+    printf("Read in %d bytes\n", amountRead);
 
     // init jsmn
     jsmn_parser parser;
