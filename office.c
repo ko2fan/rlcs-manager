@@ -26,6 +26,8 @@ void officeState(Game *game, SDL_Window *win)
                  NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_TITLE))
     {
         nk_layout_row_dynamic(gui->ctx, 35, 2);
+        nk_label_colored(gui->ctx, "Player Name", NK_TEXT_CENTERED, nk_rgb(255, 255, 255));
+        nk_label_colored(gui->ctx, "Team",  NK_TEXT_CENTERED, nk_rgb(255, 255, 255));
         for (int i = 1; i < game->numObjects; ++i)
         {
             Object *obj = game->objects[i];

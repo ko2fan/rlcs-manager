@@ -224,7 +224,7 @@ int loadFile(Game *game, const char *filename)
                     obj->params[j] = param;
                     index += 2; // processed name, value so skip those tokens now
                 }
-                // move past this object
+                // go passed this object
                 i += tok.size + 1;
             } break;
             default:
@@ -257,8 +257,7 @@ void getNextToken(char *string, Param *param, jsmntok_t *token)
             {
                 getNextToken(string, param, token + 1);
             }
-        }
-            break;
+        } break;
         case JSMN_STRING:
         {
             unsigned int len = token->end - token->start;
@@ -281,8 +280,7 @@ void getNextToken(char *string, Param *param, jsmntok_t *token)
                 getNextToken(string, param, token + 1);
             }
 
-        }
-            break;
+        } break;
         default:
         {
             printf("Expected array or string, found %d\n", token->type);
