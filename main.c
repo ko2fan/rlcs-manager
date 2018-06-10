@@ -36,7 +36,7 @@
 #include "nuklear.h"
 #include "nuklear_sdl_gl3.h"
 
-#include "jsmn.h"
+#include "jsmn/jsmn.h"
 
 #define WINDOW_WIDTH 1440
 #define WINDOW_HEIGHT 900
@@ -47,7 +47,9 @@
 typedef enum {
     MENU_STATE = 0,
     OFFICE_STATE,
+    PLAYERS_STATE,
     GAME_STATE,
+    OPTIONS_STATE,
     EXIT_STATE
 } State;
 
@@ -63,24 +65,24 @@ typedef struct Object
     int numParams;
 } Object;
 
-struct Gui;
+#include "gui.h"
 
 typedef struct Game
 {
     State state;
-    struct Gui *gui;
+    Gui *gui;
 
     Object **objects;
     int numObjects;
 } Game;
 
-#include "gui.h"
 #include "menu.h"
 #include "office.h"
 
 #include "gui.c"
 #include "menu.c"
 #include "office.c"
+#include "player_list.c"
 
 int loadFile(Game *game, const char *filename);
 void getNextToken(char *string, Param *param, jsmntok_t *token);
@@ -112,19 +114,21 @@ int main(void)
 
     /* GUI */
     Game game = {};
-    Gui gui;
-    initUI(&gui, win);
-
-    Object *objects[1024] = {};
-    game.gui = &gui;
+    Object *objects = (Object*)malloc(sizeof(Object*) * 1024);
     game.state = MENU_STATE;
     game.objects = objects;
     game.numObjects = 0;
 
-    setBackgroundColour(&gui, 0.23f, 0.42f, 0.57f);
-
     /* Load files */
-    loadFile(&game, "../players");
+    if (loadFile(&game, "../players") == 1)
+        goto cleanup;
+
+    Gui gui;
+    initUI(&gui, win);
+    game.gui = &gui;
+
+
+    setBackgroundColour(&gui, 0.23f, 0.42f, 0.57f);
 
     while (running)
     {
@@ -149,6 +153,10 @@ int main(void)
                 {
                     officeState(&game, win);
                 } break;
+            case PLAYERS_STATE:
+            {
+                playerListState(&game, win);
+            } break;
             case GAME_STATE:
                 {
                     game.state = MENU_STATE;
@@ -183,7 +191,7 @@ int loadFile(Game *game, const char *filename)
     FILE *file = fopen(filename, "r");
     int numTokens = 0;
     int amountRead = 0;
-    int fileSize = 512;
+    int fileSize = 4096;
     char *buffer = (char*)malloc(sizeof(char) * fileSize);
     int bytes = 0;
 
@@ -193,13 +201,10 @@ int loadFile(Game *game, const char *filename)
         if (amountRead >= fileSize)
         {
             fileSize *= 2;
-            char *oldBuffer = (char*)malloc(sizeof(char) * fileSize);
-            strcpy(oldBuffer, buffer);
             buffer = realloc(buffer, sizeof(char) * fileSize);
-            strcpy(buffer, oldBuffer);
-            free(oldBuffer);
         }
-        bytes = fread(buffer+amountRead, 1, fileSize-amountRead, file);
+        bytes = fread(buffer+amountRead, fileSize-amountRead, 1, file);
+        printf("Bytes read: %d\n", bytes);
         amountRead += bytes;
     } while (amountRead == fileSize);
 
@@ -209,6 +214,9 @@ int loadFile(Game *game, const char *filename)
     jsmn_parser parser;
     jsmn_init(&parser);
     numTokens = jsmn_parse(&parser, buffer, strlen(buffer), NULL, 0);
+
+    if (numTokens < 0)
+        return 1;
 
     jsmntok_t *tokens = (jsmntok_t*)malloc(sizeof(jsmntok_t) * numTokens);
 
@@ -250,6 +258,9 @@ int loadFile(Game *game, const char *filename)
         }
     }
 
+    free(tokens);
+    free(buffer);
+
     return 0; // NO ERRORS
 
     // create object -> assign string name -> assign string value
@@ -278,7 +289,9 @@ void getNextToken(char *string, Param *param, jsmntok_t *token)
         } break;
         case JSMN_STRING:
         {
-            unsigned int len = token->end - token->start;
+            int len = token->end - token->start;
+            if (len <= 0)
+                return;
             char *s = (char *) malloc(sizeof(char) * len + 1);
             strncpy(s, &string[token->start], len);
             s[len] = '\0';

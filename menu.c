@@ -21,8 +21,8 @@ void menuState(Game *game, SDL_Window *win)
 
     Gui *gui = game->gui;
 
-    if (nk_begin(gui->ctx, "RLCS Manager", nk_rect(centreX-250/2, centreY-275, 250, 275),
-                 NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE))
+    if (nk_begin(gui->ctx, "RLCS Manager", nk_rect(centreX-250/2, centreY-260, 250, 260),
+                 NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE))
     {
 
         nk_layout_row_dynamic(gui->ctx, 50, 1);
